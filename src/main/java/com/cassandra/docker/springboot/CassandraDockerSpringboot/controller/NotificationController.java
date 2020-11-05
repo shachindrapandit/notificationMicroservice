@@ -20,12 +20,7 @@ public class NotificationController {
     public boolean flag = false;
 
     @Autowired
-    private NotificationRepository repository;
-
-    @Autowired
-    private ProducerService producerService;
-
-
+    private NotificationService service;
 
     @GetMapping(value="/healthCheck", consumes = "application/json", produces = "application/json;charset=utf-8")
     public String getHealthCheck(){
@@ -34,22 +29,18 @@ public class NotificationController {
 
     @PostMapping(value="/fromMS",consumes = "application/json", produces = "application/json")
     public String addMessage(@RequestBody NotificationModel newNotification){
-        NotificationModel notification = new NotificationModel(newNotification.getId(), newNotification.getEmailId(),
-                newNotification.getNotification_body(), newNotification.getNotification_header(),
-                newNotification.isSendEmailSuccess());
-        repository.save(notification);
-        flag = producerService.checkTableUpdates(notification, notification.getId(), repository);
-        if(flag == true)
-            producerService.sendMessage(newNotification);
+        boolean save = service.save(newNotification);
+        if(save == true)
+            return "Published successfully . . .";
         else
-            return "Error in database commit !!";
-        return "Publish successfully . . .";
+            return "Error in processing . . .";
     }
 
-    @PutMapping("/notification/{id}")
+/*    @PutMapping("/notification/{id}")
     public Optional<NotificationModel> updateNotification(@RequestBody NotificationModel newNotification,
                                                      @PathVariable int id)
     {
+
         Optional<NotificationModel> optionalNotification = repository.findById(id);
         if (optionalNotification.isPresent()) {
             NotificationModel notification = optionalNotification.get();
@@ -61,8 +52,9 @@ public class NotificationController {
             repository.save(notification);
         }
         return optionalNotification;
-    }
 
+    }
+*/
 
 
 }
